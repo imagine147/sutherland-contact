@@ -111,7 +111,7 @@ export default function RegistrationForm() {
     <form
       ref={formRef}
       onSubmit={handleSubmit}
-      className="w-full lg:w-[55%] mx-auto bg-white p-8 mt-16 mb-10 rounded-lg shadow-md space-y-6"
+      className="w-full lg:w-[55%] mx-auto bg-white p-8 mt-8 mb-10 rounded-lg shadow-md space-y-6"
     >
       <h2 className="text-2xl font-bold text-center">Registration Form</h2>
 
