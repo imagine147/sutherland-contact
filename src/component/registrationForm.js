@@ -8,7 +8,7 @@ export default function RegistrationForm() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [errors, setErrors] = useState({});
 
-  const FORMSPREE_ENDPOINT = 'https://formsubmit.co/e203ea2a9b59bdfcafe9a8eebbb63c4d'; // Replace with your actual Formspree form ID
+  const FORMSPREE_ENDPOINT = 'https://formsubmit.co/9301d44d047a0abf71ec496d42a58354'; // Replace with your actual Formspree form ID
 
   const regexValidators = {
     firstName: {
@@ -127,7 +127,7 @@ export default function RegistrationForm() {
   );
 
   return (
-    <form action="https://formsubmit.co/e203ea2a9b59bdfcafe9a8eebbb63c4d"
+    <form action="https://formsubmit.co/9301d44d047a0abf71ec496d42a58354"
     method="POST"
       ref={formRef}
       onSubmit={handleSubmit}
