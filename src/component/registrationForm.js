@@ -1,16 +1,14 @@
 'use client';
 
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState } from 'react';
 
 export default function RegistrationForm() {
   const formRef = useRef(null);
   const [successMessage, setSuccessMessage] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
   const [errors, setErrors] = useState({});
-  const [idFrontPreview, setIdFrontPreview] = useState(null);
-  const [idBackPreview, setIdBackPreview] = useState(null);
 
-  const FORMSPREE_ENDPOINT = 'https://formsubmit.co/9301d44d047a0abf71ec496d42a58354';
+  const BASIN_ENDPOINT = 'https://usebasin.com/f/084bf29082c5';
 
   const regexValidators = {
     firstName: {
@@ -43,14 +41,6 @@ export default function RegistrationForm() {
     },
   };
 
-  // Cleanup object URLs
-  useEffect(() => {
-    return () => {
-      if (idFrontPreview) URL.revokeObjectURL(idFrontPreview);
-      if (idBackPreview) URL.revokeObjectURL(idBackPreview);
-    };
-  }, [idFrontPreview, idBackPreview]);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     const form = e.target;
@@ -81,12 +71,9 @@ export default function RegistrationForm() {
     }
 
     try {
-      const response = await fetch(FORMSPREE_ENDPOINT, {
+      const response = await fetch(BASIN_ENDPOINT, {
         method: 'POST',
         body: formData,
-        headers: {
-          Accept: 'application/json',
-        },
       });
 
       if (response.ok) {
@@ -94,18 +81,9 @@ export default function RegistrationForm() {
         setShowSuccess(true);
         setErrors({});
         form.reset();
-        
-        // Clear previews
-        if (idFrontPreview) URL.revokeObjectURL(idFrontPreview);
-        if (idBackPreview) URL.revokeObjectURL(idBackPreview);
-        setIdFrontPreview(null);
-        setIdBackPreview(null);
-        
         setTimeout(() => setShowSuccess(false), 3000);
       } else {
-        const result = await response.json();
-        console.error(result);
-        setSuccessMessage('Failed to submit. Please try again.');
+        setSuccessMessage('Submission failed. Please try again.');
         setShowSuccess(true);
       }
     } catch (error) {
@@ -129,21 +107,19 @@ export default function RegistrationForm() {
     </div>
   );
 
-  const handleFileChange = (e, setPreview) => {
-    const file = e.target.files[0];
-    if (file) {
-      // Revoke previous URL if exists
-      if (preview) URL.revokeObjectURL(preview);
-      
-      if (file.type.startsWith('image/')) {
-        setPreview(URL.createObjectURL(file));
-      } else {
-        setPreview(null);
-      }
-    } else {
-      setPreview(null);
-    }
-  };
+  const renderFileUpload = (id, label) => (
+    <div>
+      <label htmlFor={id} className="block text-sm font-medium mb-1">{label}</label>
+      <input
+        id={id}
+        name={id}
+        type="file"
+        accept="image/*,.pdf"
+        className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+      />
+      {errors[id] && <p className="text-sm text-red-500 mt-1">{errors[id]}</p>}
+    </div>
+  );
 
   return (
     <form
@@ -194,57 +170,8 @@ export default function RegistrationForm() {
       {renderInput('ssn', 'SSN (123-45-6789)')}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label htmlFor="idFront" className="block text-sm font-medium mb-1">
-            ID Upload (Front)
-          </label>
-          <input
-            id="idFront"
-            name="idFront"
-            type="file"
-            accept="image/*,.pdf"
-            onChange={(e) => handleFileChange(e, setIdFrontPreview)}
-            className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-          />
-          {errors.idFront && <p className="text-sm text-red-500 mt-1">{errors.idFront}</p>}
-          
-          {idFrontPreview && idFrontPreview.startsWith('blob:') && (
-            <div className="mt-3">
-              <p className="text-sm font-medium mb-1">Preview:</p>
-              <img 
-                src={idFrontPreview} 
-                alt="ID Front preview" 
-                className="max-w-[200px] max-h-[150px] border rounded object-contain"
-              />
-            </div>
-          )}
-        </div>
-
-        <div>
-          <label htmlFor="idBack" className="block text-sm font-medium mb-1">
-            ID Upload (Back)
-          </label>
-          <input
-            id="idBack"
-            name="idBack"
-            type="file"
-            accept="image/*,.pdf"
-            onChange={(e) => handleFileChange(e, setIdBackPreview)}
-            className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-          />
-          {errors.idBack && <p className="text-sm text-red-500 mt-1">{errors.idBack}</p>}
-          
-          {idBackPreview && idBackPreview.startsWith('blob:') && (
-            <div className="mt-3">
-              <p className="text-sm font-medium mb-1">Preview:</p>
-              <img 
-                src={idBackPreview} 
-                alt="ID Back preview" 
-                className="max-w-[200px] max-h-[150px] border rounded object-contain"
-              />
-            </div>
-          )}
-        </div>
+        {renderFileUpload('idFront', 'ID Upload (Front)')}
+        {renderFileUpload('idBack', 'ID Upload (Back)')}
       </div>
 
       <div>
