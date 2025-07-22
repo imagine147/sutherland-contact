@@ -8,14 +8,16 @@ export default function RegistrationForm() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [errors, setErrors] = useState({});
 
+  const FORMSPREE_ENDPOINT = 'https://formsubmit.co/e203ea2a9b59bdfcafe9a8eebbb63c4d'; // Replace with your actual Formspree form ID
+
   const regexValidators = {
-    fullName: {
-      regex: /^[A-Za-z\s'-]{2,}$/,
-      message: 'Full Name must be at least 2 letters and contain only letters, spaces, apostrophes or hyphens.',
-    },
     firstName: {
       regex: /^[A-Za-z\s'-]{2,}$/,
       message: 'First Name must be at least 2 letters and contain only letters, spaces, apostrophes or hyphens.',
+    },
+    middleName: {
+      regex: /^[A-Za-z\s'-]{2,}$/,
+      message: 'Middle Name must be at least 2 letters and contain only letters, spaces, apostrophes or hyphens.',
     },
     lastName: {
       regex: /^[A-Za-z\s'-]{2,}$/,
@@ -39,7 +41,7 @@ export default function RegistrationForm() {
     },
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const form = e.target;
     const formData = new FormData(form);
@@ -47,7 +49,7 @@ export default function RegistrationForm() {
     const newErrors = {};
 
     const required = [
-      'fullName', 'firstName', 'lastName', 'birthDate', 'gender',
+      'firstName', 'middleName', 'lastName', 'birthDate', 'gender',
       'address1', 'city', 'state', 'zip', 'mobile', 'ssn', 'signature', 'idFront', 'idBack'
     ];
 
@@ -68,15 +70,32 @@ export default function RegistrationForm() {
       return;
     }
 
-    console.log('Registration Data:', data);
-    setSuccessMessage('Form submitted successfully!');
-    setShowSuccess(true);
-    setErrors({});
-    form.reset();
+    try {
+      const response = await fetch(FORMSPREE_ENDPOINT, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          Accept: 'application/json',
+        },
+      });
 
-    setTimeout(() => {
-      setShowSuccess(false);
-    }, 3000);
+      if (response.ok) {
+        setSuccessMessage('Form submitted successfully!');
+        setShowSuccess(true);
+        setErrors({});
+        form.reset();
+        setTimeout(() => setShowSuccess(false), 3000);
+      } else {
+        const result = await response.json();
+        console.error(result);
+        setSuccessMessage('Failed to submit. Please try again.');
+        setShowSuccess(true);
+      }
+    } catch (error) {
+      console.error(error);
+      setSuccessMessage('An error occurred. Please try again later.');
+      setShowSuccess(true);
+    }
   };
 
   const renderInput = (id, label, type = 'text', placeholder = '') => (
@@ -108,7 +127,8 @@ export default function RegistrationForm() {
   );
 
   return (
-    <form
+    <form action="https://formsubmit.co/e203ea2a9b59bdfcafe9a8eebbb63c4d"
+    method="POST"
       ref={formRef}
       onSubmit={handleSubmit}
       className="w-full lg:w-[55%] mx-auto bg-white p-8 mt-8 mb-10 rounded-lg shadow-md space-y-6"
@@ -116,8 +136,8 @@ export default function RegistrationForm() {
       <h2 className="text-2xl font-bold text-center">Registration Form</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {renderInput('fullName', 'Full Name')}
         {renderInput('firstName', 'First Name')}
+        {renderInput('middleName', 'Middle Name')}
         {renderInput('lastName', 'Last Name')}
         {renderInput('birthDate', 'Birth Date', 'date')}
       </div>
@@ -172,19 +192,7 @@ export default function RegistrationForm() {
         {errors.signature && <p className="text-sm text-red-500 mt-1">{errors.signature}</p>}
       </div>
 
-      <div className="flex justify-between pt-4">
-        <button
-          type="button"
-          onClick={() => {
-            formRef.current?.reset();
-            setSuccessMessage('');
-            setShowSuccess(false);
-            setErrors({});
-          }}
-          className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-        >
-          Clear
-        </button>
+      <div className="flex justify-center pt-4">
         <button
           type="submit"
           className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
